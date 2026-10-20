@@ -1,0 +1,23 @@
+{
+  "id": "./?demo",
+  "name": "Swift Laundry Services",
+  "short_name": "Swift Laundry",
+  "description": "Mobile laundry pickup and delivery in Garfield Heights and the Cleveland suburbs.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F6FD",
+  "theme_color": "#3E157B",
+  "categories": ["lifestyle", "business"],
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Schedule a Pickup", "short_name": "Pickup", "url": "pickup.html", "icons": [{ "src": "assets/img/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Services & pricing", "short_name": "Services", "url": "services.html", "icons": [{ "src": "assets/img/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Service area & contact", "short_name": "Contact", "url": "service-area.html", "icons": [{ "src": "assets/img/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
