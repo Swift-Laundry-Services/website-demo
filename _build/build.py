@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Swift Laundry Services site generator.
+# Designed & developed by Innocent Christo. © 2026 Innocent Christo.
 """Generates the demo site's HTML pages. Run: python3 _build/build.py (from repo root).
 Shared header / menu / tab bar / footer live here so every page stays in sync."""
 import re, json, os, html
@@ -43,7 +45,10 @@ def head(path, title, desc, extra=""):
     return f'''<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">{extra}
+<meta charset="utf-8">
+<!-- Designed & developed by Innocent Christo. © 2026 Innocent Christo. Built for Swift Laundry Services. -->
+<meta name="author" content="Innocent Christo">
+<link rel="author" href="humans.txt">{extra}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{t}</title>
 <meta name="description" content="{d}">
@@ -703,7 +708,11 @@ page("404.html", "Page not found | Swift Laundry Services", "This page has wande
 REDIR = {"order.html": "pickup.html", "contact.html": "service-area.html", "why-choose-us.html": "about.html", "login.html": "index.html"}
 for old, new in REDIR.items():
     PAGES[old] = f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Moved | Swift Laundry Services</title>
+<html lang="en"><head><meta charset="utf-8">
+<!-- Designed & developed by Innocent Christo. © 2026 Innocent Christo. Built for Swift Laundry Services. -->
+<meta name="author" content="Innocent Christo">
+<link rel="author" href="humans.txt">
+<title>Moved | Swift Laundry Services</title>
 <meta name="robots" content="noindex"><link rel="canonical" href="{BASE}{new}">
 <meta http-equiv="refresh" content="0; url={new}">
 <script>location.replace("{new}" + location.search + location.hash);</script>

@@ -30,3 +30,8 @@ Anything that still needs the owner's confirmation shows a small "To be confirme
 
 ## Deploy
 GitHub Pages via `.github/workflows/pages.yml` on push to `main`. `_build/` is excluded from the published site.
+
+## Author / Credits
+
+Designed and developed by **Innocent Christo** for Swift Laundry Services.  
+© 2026 Innocent Christo. See `humans.txt`.

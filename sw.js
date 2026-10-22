@@ -1,7 +1,12 @@
+/*!
+ * Swift Laundry Services website
+ * Designed & developed by Innocent Christo
+ * © 2026 Innocent Christo. All rights reserved.
+ */
 /* Swift Laundry Services: tiny service worker so the site can be installed
    to the home screen and still opens offline. Network first, cache fallback,
    so a new deploy is always picked up straight away. */
-var CACHE = "swift-demo-5";
+var CACHE = "swift-demo-6";
 self.addEventListener("install", function (e) { self.skipWaiting(); });
 self.addEventListener("activate", function (e) {
   e.waitUntil(caches.keys().then(function (keys) {

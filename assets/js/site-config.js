@@ -1,3 +1,8 @@
+/*!
+ * Swift Laundry Services website
+ * Designed & developed by Innocent Christo
+ * © 2026 Innocent Christo. All rights reserved.
+ */
 /* ==========================================================================
    SWIFT LAUNDRY SERVICES — SITE CONFIG
    --------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+/*!
+ * Swift Laundry Services website
+ * Designed & developed by Innocent Christo
+ * © 2026 Innocent Christo. All rights reserved.
+ */
 /* Swift Laundry demo: multi-step pickup form, ZIP checker, contact form, FAQ search.
    No backend yet: forms open the visitor's email app (forms.email in site-config.js),
    or POST to forms.endpoint when one is configured. */

@@ -1,0 +1,13 @@
+/* TEAM */
+Designer & Developer: Innocent Christo
+Role: Design, front-end development, build and deployment
+
+/* CLIENT */
+Swift Laundry Services, Garfield Heights, OH
+
+/* SITE */
+Last update: 2026/10/22
+Language: English
+Standards: HTML5, CSS3, JavaScript (vanilla)
+Components: Lenis (smooth scroll), Lucide (icons), Montserrat / Inter fonts
+Copyright: © 2026 Innocent Christo
