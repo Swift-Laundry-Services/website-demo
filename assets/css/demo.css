@@ -321,3 +321,28 @@ html, body { overflow-x: clip; }
   .biz-tags li { padding: 8px 13px; font-size: .84rem; }
   .biz-actions .btn { width: 100%; justify-content: center; }
 }
+
+/* ---------- 4 order sizes + dry cleaning / ironing tables ---------- */
+.tiers--4 { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.tiers--4 .tier { padding: 26px 22px; }
+.tiers--4 .tier-price { font-size: clamp(1.9rem, 1.4rem + 1.2vw, 2.6rem); }
+.mini-prices { grid-template-columns: repeat(2, 1fr); }
+.ptable { margin-top: 22px; padding: clamp(22px, 3vw, 36px); border-radius: var(--r-lg); background: #fff; box-shadow: var(--sh-1), inset 0 0 0 1px rgba(62, 21, 123, .07); }
+.ptable:first-child { margin-top: 0; }
+.ptable h2 { color: var(--purple); margin-bottom: 8px; }
+.ptable .price-list { padding: 0; row-gap: 0; }
+.ptable .price-list li { min-height: 50px; padding: 8px 2px; border-bottom: 1px solid var(--lav-100); }
+.ptable .price-list .name { font-size: .97rem; }
+.ptable .price-list .amt { min-width: 76px; padding: 5px 10px; font-size: .93rem; }
+@media (max-width: 1020px) { .tiers--4 { grid-template-columns: repeat(2, 1fr); } .ptable .price-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .tiers.tiers--4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .tiers--4 .tier { padding: 18px 14px; }
+  .tiers--4 .tier-icon { width: 42px; height: 42px; border-radius: 14px; }
+  .tiers--4 .tier h3 { font-size: 1rem; }
+  .tiers--4 .tier-price { font-size: 1.7rem; }
+  .tiers--4 .tier-range { font-size: .82rem; margin-bottom: 12px; }
+  .tiers--4 .btn { padding-left: 8px; padding-right: 8px; font-size: .85rem; }
+  .ptable .price-list { grid-template-columns: 1fr; }
+}
+.ptables { padding-top: 0; }

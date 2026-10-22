@@ -106,14 +106,13 @@ window.SWIFT_CONFIG = {
      Set confirmed:true once the owner has checked a price.
      ------------------------------------------------------------------------ */
   pricing: {
-    washFold: [ // names and wording as in the design PDF
-      // Demo: tier names and weight bands from the 2026 rebuild package (Small / Everyday / Family).
-      { name: "Small order", weight: "Up to 10 lb", price: 41.99, confirmed: true },
-      { name: "Everyday order", weight: "More than 10 lb, up to 25 lb", price: 56.99, confirmed: true },
-      { name: "Family order", weight: "More than 25 lb, up to 40 lb", price: 79.99, confirmed: true },
-      { name: "Duvet or blanket", size: "", weight: "", price: 41.99, bags: "duvet", confirmed: false } // TODO(owner): confirm — same value as Single Load in the PDF
+    washFold: [ // names, captions and prices exactly as on the earlier sites (swift-v3 / swift-pdf-site)
+      { name: "Single Load", size: "1/2 Full Laundry Bag", weight: "1-10 lbs", price: 41.99, confirmed: true },
+      { name: "Couple Load", size: "1 Full Laundry Bag", weight: "10-25 lbs", price: 56.99, confirmed: true },
+      { name: "Family Load", size: "2 Full Laundry Bags", weight: "25-40 lbs", price: 79.99, confirmed: true },
+      { name: "Duvet or blanket", size: "", weight: "", price: 41.99, confirmed: true }
     ],
-    extraPerLb: 1.90,                   // TODO(owner): confirm this means "$1.90 per lb above 40 lb" (rebuild spec asks for confirmation)                   // "Any additional weight will be $1.90/lb (we weigh your order at pickup)"
+    extraPerLb: 1.90,                   // "Any additional weight will be $1.90/lb (we weigh your order at pickup)"
 
     // Listed row by row as laid out in the PDF's 3-column table.
     dryCleaning: [ // TODO(owner): ALL dry cleaning prices are placeholders from the PDF (values repeat per row). Confirm each.

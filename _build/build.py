@@ -134,7 +134,7 @@ def footer(path):
         <li><a data-social="facebook" href="#" aria-label="Facebook" hidden>{FB}</a></li>
       </ul>
     </div>
-    <p class="demo-note">{I("flask-conical")}<span><strong>Demo for client review.</strong> Items marked “To be confirmed” (prices, extra-weight rule, ZIP list, fees, turnaround and policies) need the owner’s confirmation before launch. Photos are generated concept images from the design package.</span></p>
+    <p class="demo-note">{I("flask-conical")}<span><strong>Demo for client review.</strong> Items marked “To be confirmed” (ZIP list, fees, turnaround and policies) need the owner’s confirmation before launch. Photos are generated concept images from the design package.</span></p>
   </div>
 </footer>
 <script src="assets/js/site-config.js"></script>
@@ -180,22 +180,38 @@ def zipcheck(id_, compact=False):
   <p class="zip-out" id="{id_}-out" role="status" aria-live="polite"></p>
 </form>'''
 
+TIERS = [("Single Load", "1/2 Full Laundry Bag", "1-10 lbs", 41.99, "single", "shopping-bag"),
+         ("Couple Load", "1 Full Laundry Bag", "10-25 lbs", 56.99, "couple", "package"),
+         ("Family Load", "2 Full Laundry Bags", "25-40 lbs", 79.99, "family", "boxes"),
+         ("Duvet or blanket", "", "", 41.99, "duvet", "bed-double")]
+EXTRA_NOTE = 'Any additional weight will be <span data-price="extraPerLb">$1.90</span>/lb (We weigh your order at pickup)'
+
 def tiers(choose=True):
-    rows = [("Small order", "Up to 10 lb", 0, "hands-fold"), ("Everyday order", "More than 10 lb, up to 25 lb", 1, None), ("Family order", "More than 25 lb, up to 40 lb", 2, None)]
     out = []
-    for name, rng, i, _ in rows:
-        btn = f'<a class="btn {"btn--purple" if i != 1 else "btn--cyan"} btn--block" href="pickup.html?tier={["small","everyday","family"][i]}">Choose pickup</a>' if choose else ""
+    for i, (name, size, wt, price, slug, ic) in enumerate(TIERS):
+        btn = f'<a class="btn {"btn--purple" if i != 1 else "btn--cyan"} btn--block" href="pickup.html?tier={slug}">Choose pickup</a>' if choose else ""
+        rng = " · ".join(x for x in (size, wt) if x) or "&nbsp;"
         out.append(f'''<li data-reveal class="tier{' tier--pop' if i == 1 else ''}">
-      {'<span class="tier-flag">Most popular size</span>' if False else ''}<span class="tier-icon">{I(["shopping-bag","package","boxes"][i])}</span>
+      <span class="tier-icon">{I(ic)}</span>
       <h3>{name}</h3>
-      <p class="tier-price" data-price="washFold.{i}.price">${[41.99,56.99,79.99][i]}</p>
+      <p class="tier-price" data-price="washFold.{i}.price">${price}</p>
       <p class="tier-range">{rng}</p>
       {btn}
     </li>''')
-    return f'''<ul class="tiers" role="list">
+    return f'''<ul class="tiers tiers--4" role="list">
     {"".join(out)}
   </ul>
-  <p class="tier-note">Weight and total confirmed before washing. Pickup fees and turnaround confirmed when booking.<br>Orders over 40 lb: <span data-price="extraPerLb">$1.90</span> per additional lb {tbc()}</p>'''
+  <p class="tier-note">{EXTRA_NOTE}</p>'''
+
+def price_tables():
+    return '''<section class="d-section d-section--tint ptables" aria-labelledby="dc-title">
+  <div class="wrap">
+    <div class="ptable" data-reveal><h2 class="h-md" id="dc-title">Dry Cleaning Prices</h2><ul class="price-list" role="list" data-render="dryCleaning"></ul></div>
+    <div class="ptable" data-reveal><h2 class="h-md" id="ir-title">Ironing Prices</h2><ul class="price-list" role="list" data-render="ironing"></ul></div>
+    <p class="tier-note">Prices subject to change</p>
+  </div>
+</section>
+'''
 
 IND = [("ind-seniors","Seniors &amp; Supported Living","heart-handshake","Caregiver chatting with a group of seniors in a bright lounge"),
        ("ind-health","Health Care","stethoscope","Doctor listening to a young patient’s heartbeat"),
@@ -298,7 +314,7 @@ page("index.html", "Swift Laundry Services | Laundry pickup & delivery in Garfie
 
 # ------------------------------------------------------------------ SERVICES
 page("services.html", "Services & Pricing | Swift Laundry Services",
- "Wash, dry and fold with pickup and return delivery. Small, Everyday and Family order options. Garfield Heights and selected Cleveland neighborhoods.",
+ "Wash, dry and fold with pickup and return delivery. Single, Couple and Family Load options. Garfield Heights and selected Cleveland neighborhoods.",
  band("Fresh laundry. Clear options.", "Services &amp; Pricing", "Services &amp; Pricing", "Pickup, washing and drying, neat folding, packaging and return delivery.") + f'''
 <section class="d-section has-blobs" aria-labelledby="inc-title"><div class="blobs" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span></div>
   <div class="wrap split split--rev">
@@ -317,7 +333,7 @@ page("services.html", "Services & Pricing | Swift Laundry Services",
   <div class="wrap center"><span class="eyebrow" data-reveal>Current options</span><h2 data-reveal class="h-lg" id="tiers-title">Choose your order size</h2></div>
   <div class="wrap">{tiers()}</div>
 </section>
-{industries(True)}
+{price_tables()}{industries(True)}
 <section class="d-section" aria-labelledby="freq-title">
   <div class="wrap center"><h2 data-reveal class="h-md" id="freq-title">How often?</h2><p class="copy lead" data-reveal>Request a one-time pickup, or ask for weekly or biweekly pickups. Availability is confirmed before booking.</p></div>
   <ul class="wrap mini-cards" role="list">
@@ -381,7 +397,7 @@ page("pickup.html", "Schedule a Pickup | Swift Laundry Services",
             <div class="field"><label for="p-window">Preferred time window <span class="optional">(optional)</span></label><select class="select" id="p-window" name="p-window"><option value="">No preference</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select><span class="field-hint">We confirm the actual window with you. {tbc("Pickup hours to be confirmed")}</span><span class="field-error" aria-live="polite"></span></div>
             {choices("frequency", "radio", [("one-time", "One-time"), ("weekly", "Weekly"), ("biweekly", "Biweekly")], "Frequency")}
             {choices("items", "checkbox", [("everyday", "Everyday laundry"), ("bedding", "Bedding (quote)"), ("towels", "Towels (quote)")], "Items")}
-            <div class="field"><label for="p-tier">Order size <span class="optional">(optional)</span></label><select class="select" id="p-tier" name="p-tier" data-prefill="tier"><option value="">Not sure yet</option><option value="small">Small order · up to 10 lb</option><option value="everyday">Everyday order · 10–25 lb</option><option value="family">Family order · 25–40 lb</option></select><span class="field-error" aria-live="polite"></span></div>
+            <div class="field"><label for="p-tier">Order size <span class="optional">(optional)</span></label><select class="select" id="p-tier" name="p-tier" data-prefill="tier"><option value="">Not sure yet</option><option value="single">Single Load · 1-10 lbs</option><option value="couple">Couple Load · 10-25 lbs</option><option value="family">Family Load · 25-40 lbs</option><option value="duvet">Duvet or blanket</option></select><span class="field-error" aria-live="polite"></span></div>
             <div class="field"><label for="p-detergent">Detergent preference <span class="optional">(optional)</span></label><select class="select" id="p-detergent" name="p-detergent"><option>Standard</option><option>Fragrance-free</option><option>I’ll describe it below</option></select><span class="field-error" aria-live="polite"></span></div>
             {field("p-notes", "Access instructions or laundry preferences", "textarea", req=False, opt=True, span=True, extra='placeholder="e.g. door code, where to leave items, special care instructions"')}
             <div class="field span-2 check-field" data-summary-label="Contactless pickup"><label class="check"><input type="checkbox" name="p-contactless" value="Yes" data-label="Yes"><span>Contactless pickup requested</span></label></div>
@@ -411,8 +427,8 @@ page("pickup.html", "Schedule a Pickup | Swift Laundry Services",
       </div>
       <div data-reveal class="aside-card">
         <h3>Pricing reminder</h3>
-        <ul class="mini-prices" role="list"><li><span>Small order</span><strong data-price="washFold.0.price">$41.99</strong><small>Up to 10 lb</small></li><li><span>Everyday order</span><strong data-price="washFold.1.price">$56.99</strong><small>10–25 lb</small></li><li><span>Family order</span><strong data-price="washFold.2.price">$79.99</strong><small>25–40 lb</small></li></ul>
-        <p class="small-muted">Orders over 40 lb: <span data-price="extraPerLb">$1.90</span> per additional lb. {tbc()}</p>
+        <ul class="mini-prices" role="list"><li><span>Single Load</span><strong data-price="washFold.0.price">$41.99</strong><small>1-10 lbs</small></li><li><span>Couple Load</span><strong data-price="washFold.1.price">$56.99</strong><small>10-25 lbs</small></li><li><span>Family Load</span><strong data-price="washFold.2.price">$79.99</strong><small>25-40 lbs</small></li><li><span>Duvet or blanket</span><strong data-price="washFold.3.price">$41.99</strong></li></ul>
+        <p class="small-muted">{EXTRA_NOTE}</p>
       </div>
       <a data-reveal class="aside-card help-card" href="{TEL}" data-href="tel"><span class="icon-tile">{I("phone")}</span><span><strong>Need help booking?</strong>Call or text <span data-bind="phone">{PHONE}</span></span></a>
     </aside>
@@ -569,9 +585,9 @@ G = [("pickup", "truck", "Pickup &amp; delivery", [
        ("Can I set up recurring pickups?", "<p>Yes. You can request one-time, weekly or biweekly pickups. Availability is confirmed before booking.</p>"),
        ("When will my laundry be returned?", "<p>We confirm turnaround and your return delivery when booking.</p>")]),
      ("pricing", "tag", "Pricing", [
-       ("How much does it cost?", '<p>Small order (up to 10 lb) <strong data-price="washFold.0.price">$41.99</strong>, Everyday order (more than 10 lb, up to 25 lb) <strong data-price="washFold.1.price">$56.99</strong>, Family order (more than 25 lb, up to 40 lb) <strong data-price="washFold.2.price">$79.99</strong>. See <a href="services.html">Services &amp; Pricing</a>.</p>'),
+       ("How much does it cost?", '<p>Single Load (1-10 lbs) <strong data-price="washFold.0.price">$41.99</strong>, Couple Load (10-25 lbs) <strong data-price="washFold.1.price">$56.99</strong>, Family Load (25-40 lbs) <strong data-price="washFold.2.price">$79.99</strong>, Duvet or blanket <strong data-price="washFold.3.price">$41.99</strong>. See <a href="services.html">Services &amp; Pricing</a>.</p>'),
        ("How is the weight measured?", "<p>We weigh your laundry and confirm the weight and total with you before washing.</p>"),
-       ("Are there extra fees?", "<p>Pickup fees and turnaround are confirmed when booking. Orders over 40 lb are <span data-price=\"extraPerLb\">$1.90</span> per additional lb.</p><p class=\"tbc-line\">" + tbc("Fees and extra-weight rule to be confirmed") + "</p>")]),
+       ("Are there extra fees?", "<p>Pickup fees and turnaround are confirmed when booking. " + EXTRA_NOTE + ".</p><p class=\"tbc-line\">" + tbc("Fees to be confirmed") + "</p>")]),
      ("care", "shirt", "Laundry care", [
        ("Where is my laundry washed?", "<p>We personally wash your laundry at local laundromats, then fold, package and return it to your door.</p>"),
        ("Can I choose my detergent?", "<p>Yes. Tell us your detergent and drying preferences when you book. We confirm which requests we can accommodate before washing.</p>"),
@@ -643,7 +659,7 @@ textpage("service-terms.html", "Service Terms", "Service Terms", "The terms for 
  "These terms will describe how pickup requests are accepted and how your laundry is handled.",
  [("Requests and acceptance", "<p>Submitting a request does not book a pickup. We review each request and confirm availability, timing and fees with you before your pickup.</p>" + P_("Full order-acceptance process.")),
   ("Coverage and timing", "<p>We serve Garfield Heights and selected Cleveland neighborhoods. Pickup windows and turnaround are confirmed when booking.</p>" + P_("Confirmed ZIP list, pickup hours and capacity.")),
-  ("Weight and pricing", '<p>Current options: Small order up to 10 lb, Everyday order more than 10 lb up to 25 lb, Family order more than 25 lb up to 40 lb. See <a href="services.html">Services &amp; Pricing</a>. Weight and total are confirmed before washing.</p>' + P_("Extra-weight rule, rounding, minimum order, delivery fees and tax.")),
+  ("Weight and pricing", '<p>Current options: Single Load 1-10 lbs, Couple Load 10-25 lbs, Family Load 25-40 lbs, Duvet or blanket. See <a href="services.html">Services &amp; Pricing</a>. Weight and total are confirmed before washing.</p>' + P_("Rounding, minimum order, delivery fees and tax.")),
   ("Payment", P_("When and how payment is taken.")),
   ("Accepted and excluded items", '<p>See <a href="laundry-care.html">Laundry Care</a> for how to prepare your laundry.</p>' + P_("Items that can’t be accepted.")),
   ("Cancellations and missed pickups", P_("How to cancel or change a pickup, and what happens if a pickup is missed.")),
