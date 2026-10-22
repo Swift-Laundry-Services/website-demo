@@ -197,6 +197,38 @@ def tiers(choose=True):
   </ul>
   <p class="tier-note">Weight and total confirmed before washing. Pickup fees and turnaround confirmed when booking.<br>Orders over 40 lb: <span data-price="extraPerLb">$1.90</span> per additional lb {tbc()}</p>'''
 
+IND = [("ind-seniors","Seniors &amp; Supported Living","heart-handshake","Caregiver chatting with a group of seniors in a bright lounge"),
+       ("ind-health","Health Care","stethoscope","Doctor listening to a young patient’s heartbeat"),
+       ("ind-construction","Construction","hard-hat","Cranes over a high-rise building under construction at sunset"),
+       ("ind-industrial","Industrial &amp; Manufacturing","factory","Aerial view of an industrial plant"),
+       ("ind-nonprofits","Nonprofits &amp; Shelters","hand-heart","Volunteers serving food at a community kitchen"),
+       ("ind-education","Educational Institutions","graduation-cap","Empty classroom with desks and a projector screen")]
+IND_TAGS = [("scissors","Salons, Spas &amp; Massage Studios"),("dumbbell","Gyms &amp; Sports Teams"),("hotel","Hotels &amp; Hospitality"),
+            ("key-round","Airbnb &amp; Short-Term Rentals"),("utensils-crossed","Events &amp; Catering"),("building-2","Real Estate &amp; Property Managers"),
+            ("briefcase","Offices &amp; Small Businesses")]
+QUOTE = "service-area.html?topic=business#contact-form"
+def industries(full=True):
+    cards = "".join(f'<li data-reveal class="biz-card">{pic(k, alt, "(max-width: 600px) 46vw, (max-width: 1100px) 44vw, 30vw")}<h3><span class="biz-ic">{I(ic)}</span>{t}</h3></li>' for k, t, ic, alt in IND)
+    tags = "".join(f'<li>{I(ic)}{t}</li>' for ic, t in IND_TAGS)
+    hid = "industries" if full else "industries-home"
+    intro = ("Linens, uniforms, towels and bedding for organizations of every size, picked up and returned on a schedule that works for you." if full
+             else "Swift Laundry also handles linens, uniforms and towels for businesses and organizations.")
+    more = (f'<h3 class="biz-more-title" data-reveal>And many more</h3><ul class="biz-tags" role="list">{tags}</ul>' if full
+            else f'<ul class="biz-tags biz-tags--compact" role="list">{tags}</ul>')
+    acts = (f'<a class="btn btn--cyan" href="{QUOTE}">Request a business quote {I("arrow-right")}</a>' +
+            ("" if full else f'<a class="btn btn--ghost-light" href="services.html#industries">See all industries {I("arrow-right")}</a>'))
+    return f'''<section class="biz" id="{hid}" aria-labelledby="{hid}-title">
+  <div class="biz-panel has-blobs"><div class="blobs blobs--dark" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  <div class="wrap">
+    <div class="center"><span class="eyebrow eyebrow--light" data-reveal>{I("building-2")}For businesses &amp; organizations</span>
+    <h2 data-reveal class="h-lg" id="{hid}-title">Industries We Serve</h2><p data-reveal class="biz-lead">{intro}</p></div>
+    <ul class="biz-grid" role="list" aria-label="Industries we serve">{cards}</ul>
+    {more}
+    <div class="biz-actions" data-reveal>{acts}</div>
+    <p class="biz-note">Commercial pricing and pickup schedules are quoted per business. {tbc("Commercial rates to be confirmed")}</p>
+  </div></div>
+</section>'''
+
 def card(icon, title, text):
     return f'<li data-reveal class="mini-card"><span class="icon-tile icon-tile--soft">{I(icon)}</span><div><h3>{title}</h3><p>{text}</p></div></li>'
 
@@ -234,6 +266,8 @@ page("index.html", "Swift Laundry Services | Laundry pickup & delivery in Garfie
   <div class="wrap center"><span class="eyebrow" data-reveal>Wash, dry &amp; fold</span><h2 data-reveal class="h-lg" id="price-title">Simple options for everyday laundry</h2></div>
   <div class="wrap">{tiers()}</div>
 </section>
+
+{industries(False)}
 
 <section class="d-section" aria-labelledby="fit-title">
   <div class="wrap center"><h2 data-reveal class="h-md" id="fit-title">Make it fit your routine</h2></div>
@@ -283,6 +317,7 @@ page("services.html", "Services & Pricing | Swift Laundry Services",
   <div class="wrap center"><span class="eyebrow" data-reveal>Current options</span><h2 data-reveal class="h-lg" id="tiers-title">Choose your order size</h2></div>
   <div class="wrap">{tiers()}</div>
 </section>
+{industries(True)}
 <section class="d-section" aria-labelledby="freq-title">
   <div class="wrap center"><h2 data-reveal class="h-md" id="freq-title">How often?</h2><p class="copy lead" data-reveal>Request a one-time pickup, or ask for weekly or biweekly pickups. Availability is confirmed before booking.</p></div>
   <ul class="wrap mini-cards" role="list">
@@ -493,7 +528,7 @@ page("service-area.html", "Service Area & Contact | Swift Laundry Services", "Ch
         <div class="form-grid form-grid--2">
           {field("c-name", "Name", auto="name")}
           {field("c-reach", "Phone or email", auto="email", extra='data-phone-or-email data-msg-pattern="Please enter a phone number or email address."')}
-          <div class="field span-2"><label for="c-type">Inquiry type</label><select class="select" id="c-type" name="c-type" data-prefill="topic" required aria-describedby="c-type-error"><option value="">Choose one…</option><option value="household">Household laundry</option><option value="bedding">Bedding quote</option><option value="towels">Business towels</option><option value="other">Other</option></select><span class="field-error" id="c-type-error" aria-live="polite"></span></div>
+          <div class="field span-2"><label for="c-type">Inquiry type</label><select class="select" id="c-type" name="c-type" data-prefill="topic" required aria-describedby="c-type-error"><option value="">Choose one…</option><option value="household">Household laundry</option><option value="bedding">Bedding quote</option><option value="towels">Business towels</option><option value="business">Business / commercial quote</option><option value="other">Other</option></select><span class="field-error" id="c-type-error" aria-live="polite"></span></div>
           {field("c-msg", "Message", "textarea", span=True)}
         </div>
         <div class="step-actions"><span class="small-muted">Prefer to talk? <a href="{TEL}" data-href="tel">Call</a> or <a href="{SMS}" data-href="sms">text</a> us.</span><button class="btn btn--purple" type="submit" data-submit>Send inquiry</button></div>

@@ -282,3 +282,42 @@ html, body { overflow-x: clip; }
 .contact-cards--5 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; }
 .contact-cards--5 .contact-card .value { font-size: 1.02rem; overflow-wrap: anywhere; }
 @media (max-width: 860px) { .contact-cards--5 { grid-template-columns: 1fr !important; } .footer-grid--4 { grid-template-columns: 1fr; } }
+
+/* ---------- Industries We Serve ---------- */
+.biz { padding: clamp(24px, 4vw, 48px) var(--gutter); scroll-margin-top: 90px; }
+.biz-panel { position: relative; overflow: hidden; border-radius: clamp(28px, 4vw, 48px); background: var(--grad-brand); color: #fff; padding: clamp(40px, 6vw, 80px) clamp(18px, 4vw, 56px); box-shadow: var(--sh-2); }
+.biz-panel .wrap { position: relative; z-index: 1; }
+.biz .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
+.biz .eyebrow .lu { width: 16px; height: 16px; }
+.biz h2 { color: #fff; }
+.biz-lead { max-width: 640px; margin: 14px auto 0; color: rgba(255,255,255,.82); line-height: 1.6; }
+.biz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: clamp(28px, 4vw, 48px); list-style: none; padding: 0; }
+.biz-card { position: relative; border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 442 / 385; box-shadow: 0 20px 40px -18px rgba(0,0,0,.55); isolation: isolate; }
+.biz-card picture { display: block; height: 100%; }
+.biz-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+@media (hover: hover) { .biz-card:hover img { transform: scale(1.06); } }
+.biz-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23,7,51,0) 40%, rgba(23,7,51,.6) 72%, rgba(23,7,51,.9) 100%); }
+.biz-card h3 { position: absolute; z-index: 1; left: 16px; right: 16px; bottom: 14px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: clamp(.92rem, .85rem + .35vw, 1.2rem); line-height: 1.25; color: #fff; }
+.biz-ic { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); color: var(--cyan-200, #9fe6fa); }
+.biz-ic .lu { width: 20px; height: 20px; }
+.biz-more-title { text-align: center; margin-top: clamp(32px, 4vw, 48px); font-size: 1.1rem; font-weight: 700; color: #fff; }
+.biz-tags { margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; list-style: none; padding: 0; }
+.biz-tags li { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28); font-weight: 600; font-size: .95rem; color: #fff; }
+.biz-tags li .lu { width: 16px; height: 16px; color: var(--cyan-200, #9fe6fa); flex: none; }
+.biz-tags--compact { margin-top: 24px; }
+.biz-tags--compact li { padding: 8px 14px; font-size: .85rem; }
+.biz-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+.biz-note { text-align: center; margin-top: 16px; font-size: .85rem; color: rgba(255,255,255,.7); }
+@media (max-width: 860px) { .biz-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+@media (max-width: 600px) {
+  .biz { padding-inline: 10px; }
+  .biz-panel { padding: 36px 14px 30px; border-radius: 30px; }
+  .biz-grid { gap: 10px; }
+  .biz-card { aspect-ratio: 4 / 5; border-radius: 20px; }
+  .biz-card h3 { left: 10px; right: 10px; bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px; font-size: .86rem; }
+  .biz-ic { width: 30px; height: 30px; border-radius: 10px; }
+  .biz-ic .lu { width: 16px; height: 16px; }
+  .biz-tags { gap: 8px; }
+  .biz-tags li { padding: 8px 13px; font-size: .84rem; }
+  .biz-actions .btn { width: 100%; justify-content: center; }
+}
