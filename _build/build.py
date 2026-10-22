@@ -219,18 +219,27 @@ IND = [("ind-seniors","Seniors &amp; Supported Living","heart-handshake","Caregi
        ("ind-industrial","Industrial &amp; Manufacturing","factory","Aerial view of an industrial plant"),
        ("ind-nonprofits","Nonprofits &amp; Shelters","hand-heart","Volunteers serving food at a community kitchen"),
        ("ind-education","Educational Institutions","graduation-cap","Empty classroom with desks and a projector screen")]
-IND_TAGS = [("scissors","Salons, Spas &amp; Massage Studios"),("dumbbell","Gyms &amp; Sports Teams"),("hotel","Hotels &amp; Hospitality"),
-            ("key-round","Airbnb &amp; Short-Term Rentals"),("utensils-crossed","Events &amp; Catering"),("building-2","Real Estate &amp; Property Managers"),
-            ("briefcase","Offices &amp; Small Businesses")]
+IND += [("ind-spa","Salons, Spas &amp; Massage Studios","scissors","Massage table in a calm spa room, set with a folded teal towel"),
+        ("ind-gym","Gyms &amp; Sports Teams","dumbbell","Spacious modern gym with weight racks and training equipment"),
+        ("ind-hotel","Hotels &amp; Hospitality","hotel","Hotel bed with crisp white sheets and two folded white bathrobes"),
+        ("ind-airbnb","Airbnb &amp; Short-Term Rentals","key-round","Bright modern rental bedroom with a neatly made bed"),
+        ("ind-events","Events &amp; Catering","utensils-crossed","Banquet hall table dressed with a white tablecloth and floral centerpiece"),
+        ("ind-realestate","Real Estate &amp; Property Managers","building-2","Apartment building with rows of balconies among green trees"),
+        ("ind-offices","Offices &amp; Small Businesses","briefcase","Open-plan office with a team working at their desks")]
+# Photo credits for the ind-* images: see CREDITS.md
 QUOTE = "service-area.html?topic=business#contact-form"
 def industries(full=True):
-    cards = "".join(f'<li data-reveal class="biz-card">{pic(k, alt, "(max-width: 600px) 46vw, (max-width: 1100px) 44vw, 30vw")}<h3><span class="biz-ic">{I(ic)}</span>{t}</h3></li>' for k, t, ic, alt in IND)
-    tags = "".join(f'<li>{I(ic)}{t}</li>' for ic, t in IND_TAGS)
+    n = len(IND)
     hid = "industries" if full else "industries-home"
+    cards = "".join(f'<li class="biz-card biz-slide" role="group" aria-roledescription="slide" aria-label="{i+1} of {n}: {t}">{pic(k, alt, "(max-width: 600px) 82vw, (max-width: 1100px) 46vw, 30vw")}<h3><span class="biz-ic">{I(ic)}</span>{t}</h3></li>' for i, (k, t, ic, alt) in enumerate(IND))
     intro = ("Linens, uniforms, towels and bedding for organizations of every size, picked up and returned on a schedule that works for you." if full
              else "Swift Laundry also handles linens, uniforms and towels for businesses and organizations.")
-    more = (f'<h3 class="biz-more-title" data-reveal>And many more</h3><ul class="biz-tags" role="list">{tags}</ul>' if full
-            else f'<ul class="biz-tags biz-tags--compact" role="list">{tags}</ul>')
+    more = (f'<div class="biz-carousel" data-biz-carousel data-reveal role="region" aria-roledescription="carousel" aria-label="Industries we serve">'
+            f'<div class="biz-viewport" tabindex="0" aria-label="Industries we serve. Use the left and right arrow keys to browse."><ul class="biz-track" role="list">{cards}</ul></div>'
+            f'<div class="biz-ctrls"><button type="button" class="biz-arrow" data-prev aria-label="Previous industries">{I("chevron-left")}</button>'
+            f'<div class="biz-dots" role="group" aria-label="Choose a set of industries"></div>'
+            f'<button type="button" class="biz-arrow" data-next aria-label="Next industries">{I("chevron-right")}</button></div>'
+            f'<p class="visually-hidden" aria-live="polite" data-biz-live></p></div>')
     acts = (f'<a class="btn btn--cyan" href="{QUOTE}">Request a business quote {I("arrow-right")}</a>' +
             ("" if full else f'<a class="btn btn--ghost-light" href="services.html#industries">See all industries {I("arrow-right")}</a>'))
     return f'''<section class="biz" id="{hid}" aria-labelledby="{hid}-title">
@@ -238,7 +247,6 @@ def industries(full=True):
   <div class="wrap">
     <div class="center"><span class="eyebrow eyebrow--light" data-reveal>{I("building-2")}For businesses &amp; organizations</span>
     <h2 data-reveal class="h-lg" id="{hid}-title">Industries We Serve</h2><p data-reveal class="biz-lead">{intro}</p></div>
-    <ul class="biz-grid" role="list" aria-label="Industries we serve">{cards}</ul>
     {more}
     <div class="biz-actions" data-reveal>{acts}</div>
     <p class="biz-note">Commercial pricing and pickup schedules are quoted per business. {tbc("Commercial rates to be confirmed")}</p>

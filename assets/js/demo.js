@@ -174,3 +174,97 @@
     });
   }
 })();
+
+/* ---------- Industries We Serve: auto-sliding carousel (vanilla, no libraries) ----------
+   Shows 3 / 2 / 1.15 cards, advances one full set every ~4.5 s, loops endlessly
+   (cloned edges), pauses on hover, focus, touch and when off-screen. No autoplay
+   for prefers-reduced-motion. Horizontal drag only, so Lenis vertical scroll is untouched. */
+(function () {
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var DELAY = 4500, C = 3;
+  Array.prototype.forEach.call(document.querySelectorAll("[data-biz-carousel]"), function (root) {
+    var vp = root.querySelector(".biz-viewport"), track = root.querySelector(".biz-track");
+    var real = Array.prototype.slice.call(track.children), n = real.length;
+    var dotsBox = root.querySelector(".biz-dots"), live = root.querySelector("[data-biz-live]");
+    function clone(el) { var c = el.cloneNode(true); c.setAttribute("aria-hidden", "true"); c.setAttribute("inert", ""); c.classList.add("is-clone");
+      Array.prototype.forEach.call(c.querySelectorAll("img"), function (i) { i.alt = ""; i.loading = "eager"; }); return c; }
+    real.slice(-C).forEach(function (el) { track.insertBefore(clone(el), real[0]); });
+    real.slice(0, C).forEach(function (el) { track.appendChild(clone(el)); });
+    var per = 3, pages = 1, idx = 0, timer = null, hold = 0, inView = true, busy = false;
+
+    function measure() {
+      var v = parseFloat(getComputedStyle(root).getPropertyValue("--v")) || 3;
+      per = Math.max(1, Math.floor(v)); var p = Math.ceil(n / per);
+      if (p !== pages || !dotsBox.children.length) {
+        pages = p; dotsBox.innerHTML = "";
+        for (var i = 0; i < pages; i++) { var b = document.createElement("button"); b.type = "button";
+          b.setAttribute("aria-label", "Show industries " + (i * per + 1) + " to " + Math.min(n, i * per + per));
+          b.addEventListener("click", (function (k) { return function () { go(start(k), true); }; })(i)); dotsBox.appendChild(b); }
+      }
+      idx = start(page(idx)); place(false);
+    }
+    function start(p) { return Math.min(p * per, n - per); }
+    function page(i) { return i >= n - per ? pages - 1 : Math.floor(i / per); }
+    function place(anim) {
+      track.classList.toggle("no-anim", !anim);
+      var el = track.children[idx + C]; track.style.transform = "translate3d(" + (-el.offsetLeft) + "px,0,0)";
+      var pg = page(((idx % n) + n) % n);
+      Array.prototype.forEach.call(dotsBox.children, function (d, k) { d.setAttribute("aria-current", k === pg ? "true" : "false"); });
+    }
+    function go(i, user) {
+      if (busy && !user) return;
+      idx = i; busy = !reduce; place(!reduce);
+      clearTimeout(root._st); if (reduce) settle(); else root._st = setTimeout(settle, 1000);
+      if (user && live) live.textContent = "Showing industries " + (page(((idx % n) + n) % n) * per + 1) + " of " + n;
+      if (user) restart();
+    }
+    function settle() {
+      busy = false;
+      if (idx >= n) { idx = 0; place(false); } else if (idx < 0) { idx = start(pages - 1); place(false); }
+    }
+    track.addEventListener("transitionend", function (e) { if (e.target === track) settle(); });
+    function next(user) { var p = page(idx); go(p >= pages - 1 ? n : start(p + 1), user); }
+    function prev(user) { var p = page(idx); go(p <= 0 ? -per : start(p - 1), user); }
+    root.querySelector("[data-next]").addEventListener("click", function () { next(true); });
+    root.querySelector("[data-prev]").addEventListener("click", function () { prev(true); });
+    vp.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") { e.preventDefault(); next(true); } else if (e.key === "ArrowLeft") { e.preventDefault(); prev(true); }
+    });
+
+    function tick() { if (!hold && inView && !document.hidden) next(false); }
+    function restart() { clearInterval(timer); if (!reduce) timer = setInterval(tick, DELAY); }
+    function pause() { hold++; } function resume() { hold = Math.max(0, hold - 1); }
+    root.addEventListener("mouseenter", pause); root.addEventListener("mouseleave", resume);
+    root.addEventListener("focusin", function () { if (!root._f) { root._f = 1; pause(); } });
+    root.addEventListener("focusout", function (e) { if (!root.contains(e.relatedTarget) && root._f) { root._f = 0; resume(); } });
+    var touchT = null;
+    root.addEventListener("touchstart", function () { clearTimeout(touchT); if (!root._t) { root._t = 1; pause(); } }, { passive: true });
+    root.addEventListener("touchend", function () { clearTimeout(touchT); touchT = setTimeout(function () { if (root._t) { root._t = 0; resume(); restart(); } }, 3500); }, { passive: true });
+
+    /* Drag / swipe (pointer events; vertical moves fall through to the page) */
+    var sx = 0, sy = 0, dx = 0, base = 0, drag = false, decided = false, horiz = false;
+    vp.addEventListener("pointerdown", function (e) {
+      if (e.button) return; drag = true; decided = false; horiz = false; sx = e.clientX; sy = e.clientY; dx = 0;
+      if (busy) settle();
+      base = -track.children[idx + C].offsetLeft;
+    });
+    vp.addEventListener("pointermove", function (e) {
+      if (!drag) return; dx = e.clientX - sx; var dy = e.clientY - sy;
+      if (!decided && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) { decided = true; horiz = Math.abs(dx) > Math.abs(dy);
+        if (horiz) { vp.classList.add("is-drag"); track.classList.add("no-anim"); try { vp.setPointerCapture(e.pointerId); } catch (_) {} } }
+      if (horiz) track.style.transform = "translate3d(" + (base + dx) + "px,0,0)";
+    });
+    function end() {
+      if (!drag) return; drag = false; vp.classList.remove("is-drag");
+      if (!horiz) return;
+      var th = Math.min(80, vp.offsetWidth * .12);
+      if (dx < -th) next(true); else if (dx > th) prev(true); else place(true);
+    }
+    vp.addEventListener("pointerup", end); vp.addEventListener("pointercancel", end);
+
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }).observe(root);
+    var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(measure, 120); });
+    measure(); restart();
+    root._biz = { next: next, prev: prev, get idx() { return idx; }, get hold() { return hold; } };
+  });
+})();
