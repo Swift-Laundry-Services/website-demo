@@ -284,8 +284,8 @@ html, body { overflow-x: clip; }
 @media (max-width: 860px) { .contact-cards--5 { grid-template-columns: 1fr !important; } .footer-grid--4 { grid-template-columns: 1fr; } }
 
 /* ---------- Industries We Serve ---------- */
-.biz { padding: clamp(24px, 4vw, 48px) var(--gutter); scroll-margin-top: 90px; }
-.biz-panel { position: relative; overflow: hidden; border-radius: clamp(28px, 4vw, 48px); background: var(--grad-brand); color: #fff; padding: clamp(40px, 6vw, 80px) clamp(18px, 4vw, 56px); box-shadow: var(--sh-2); }
+.biz { padding: clamp(24px, 4vw, 48px) 0; scroll-margin-top: 90px; }
+.biz-panel { position: relative; overflow: hidden; border-radius: 0; background: var(--grad-brand); color: #fff; padding: clamp(40px, 6vw, 80px) 0; box-shadow: var(--sh-2); }
 .biz-panel .wrap { position: relative; z-index: 1; }
 .biz .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
 .biz .eyebrow .lu { width: 16px; height: 16px; }
@@ -302,8 +302,8 @@ html, body { overflow-x: clip; }
 .biz-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
 .biz-note { text-align: center; margin-top: 16px; font-size: .85rem; color: rgba(255,255,255,.7); }
 @media (max-width: 600px) {
-  .biz { padding-inline: 10px; }
-  .biz-panel { padding: 36px 14px 30px; border-radius: 30px; }
+  .biz { padding-inline: 0; }
+  .biz-panel { padding: 36px 0 30px; border-radius: 0; }
   .biz-card { border-radius: 22px; }
   .biz-card h3 { left: 14px; right: 14px; bottom: 14px; font-size: 1rem; }
   .biz-ic { width: 30px; height: 30px; border-radius: 10px; }
@@ -338,23 +338,34 @@ html, body { overflow-x: clip; }
 
 /* ---------- Industries carousel (vanilla JS in demo.js) ---------- */
 .biz-carousel { --v: 3; --gap: 18px; margin-top: clamp(28px, 4vw, 48px); }
-.biz-viewport { overflow: hidden; border-radius: var(--r-lg); outline: none; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+/* Full-bleed: viewport spans the screen, padding keeps the first card on the content column */
+.biz-viewport { position: relative; overflow: hidden; margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); outline: none; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 min(5vw, 56px), #000 calc(100% - min(5vw, 56px)), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 min(5vw, 56px), #000 calc(100% - min(5vw, 56px)), transparent 100%); }
 .biz-viewport.is-drag { cursor: grabbing; }
-.biz-viewport:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.85); }
+.biz-viewport:focus-visible .biz-track { outline: 3px solid rgba(255,255,255,.85); outline-offset: 4px; border-radius: 22px; }
 .biz-track { display: flex; gap: var(--gap); list-style: none; margin: 0; padding: 0; will-change: transform; transition: transform .85s cubic-bezier(.65,.05,.25,1); }
 .biz-track.no-anim { transition: none; }
 .biz-slide { flex: 0 0 calc((100% - var(--gap) * (var(--v) - 1)) / var(--v)); }
 .biz-slide img { -webkit-user-drag: none; pointer-events: none; }
-.biz-ctrls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 22px; }
-.biz-arrow { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; color: #fff; background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.32); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background .25s, transform .25s; }
+.biz-ctrls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 26px; }
+.biz-arrow { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; color: #fff; background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.32); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background .25s, transform .25s; }
 .biz-arrow:hover { background: rgba(255,255,255,.26); transform: scale(1.06); }
 .biz-arrow:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-.biz-arrow .lu { width: 22px; height: 22px; }
-.biz-dots { display: flex; gap: 6px; }
-.biz-dots button { position: relative; width: 26px; height: 26px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
-.biz-dots button::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.4); transition: width .35s var(--ease), background .35s; }
-.biz-dots button[aria-current="true"]::before { width: 24px; background: #fff; }
-.biz-dots button:focus-visible { outline: 2px solid #fff; border-radius: 8px; }
+.biz-arrow .lu { width: 20px; height: 20px; }
+/* Slim segmented progress: one segment per set; active one fills with the autoplay timer */
+.biz-prog { display: flex; gap: 5px; width: clamp(150px, 26vw, 300px); }
+.biz-prog button { flex: 1 1 0; min-width: 0; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; align-items: center; }
+.biz-prog button span { position: relative; display: block; width: 100%; height: 3px; border-radius: 99px; background: rgba(255,255,255,.26); overflow: hidden; transition: height .25s; }
+.biz-prog button:hover span { height: 5px; }
+.biz-prog button span::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #7dd3fc, #fff); transform: scaleX(0); transform-origin: left; }
+.biz-prog button.is-done span::after { transform: scaleX(1); background: rgba(255,255,255,.55); }
+.biz-prog button[aria-current="true"] span::after { transform: scaleX(1); }
+.biz-prog button.is-run span::after { animation: bizFill var(--dur, 4500ms) linear forwards; }
+.biz-carousel.is-paused .biz-prog button.is-run span::after { animation-play-state: paused; }
+.biz-prog button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 6px; }
+@keyframes bizFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.biz-count { flex: none; font-variant-numeric: tabular-nums; font-size: .82rem; letter-spacing: .08em; color: rgba(255,255,255,.7); min-width: 4.6em; text-align: center; }
+.biz-count b { color: #fff; font-weight: 700; }
 @media (max-width: 1024px) { .biz-carousel { --v: 2; --gap: 14px; } }
-@media (max-width: 600px) { .biz-carousel { --v: 1.15; --gap: 12px; } .biz-viewport { border-radius: 22px 0 0 22px; margin-right: -14px; } }
-@media (prefers-reduced-motion: reduce) { .biz-track { transition: none; } }
+@media (max-width: 600px) { .biz-carousel { --v: 1.15; --gap: 12px; } .biz-ctrls { gap: 10px; } .biz-prog { width: auto; flex: 1 1 auto; gap: 3px; } .biz-count { font-size: .75rem; min-width: 4.2em; } .biz-arrow { width: 40px; height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .biz-track { transition: none; } .biz-prog button.is-run span::after { animation: none; transform: scaleX(1); } }

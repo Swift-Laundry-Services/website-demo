@@ -237,7 +237,8 @@ def industries(full=True):
     more = (f'<div class="biz-carousel" data-biz-carousel data-reveal role="region" aria-roledescription="carousel" aria-label="Industries we serve">'
             f'<div class="biz-viewport" tabindex="0" aria-label="Industries we serve. Use the left and right arrow keys to browse."><ul class="biz-track" role="list">{cards}</ul></div>'
             f'<div class="biz-ctrls"><button type="button" class="biz-arrow" data-prev aria-label="Previous industries">{I("chevron-left")}</button>'
-            f'<div class="biz-dots" role="group" aria-label="Choose a set of industries"></div>'
+            f'<div class="biz-prog" role="group" aria-label="Choose a set of industries"></div>'
+            f'<span class="biz-count" aria-hidden="true"><b data-biz-cur>01</b> / {n:02d}</span>'
             f'<button type="button" class="biz-arrow" data-next aria-label="Next industries">{I("chevron-right")}</button></div>'
             f'<p class="visually-hidden" aria-live="polite" data-biz-live></p></div>')
     acts = (f'<a class="btn btn--cyan" href="{QUOTE}">Request a business quote {I("arrow-right")}</a>' +

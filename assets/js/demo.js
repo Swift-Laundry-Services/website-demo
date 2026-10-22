@@ -181,15 +181,16 @@
    for prefers-reduced-motion. Horizontal drag only, so Lenis vertical scroll is untouched. */
 (function () {
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var DELAY = 4500, C = 3;
+  var DELAY = 4500, C = 6;
   Array.prototype.forEach.call(document.querySelectorAll("[data-biz-carousel]"), function (root) {
     var vp = root.querySelector(".biz-viewport"), track = root.querySelector(".biz-track");
     var real = Array.prototype.slice.call(track.children), n = real.length;
-    var dotsBox = root.querySelector(".biz-dots"), live = root.querySelector("[data-biz-live]");
+    var dotsBox = root.querySelector(".biz-prog"), cur = root.querySelector("[data-biz-cur]"), live = root.querySelector("[data-biz-live]");
     function clone(el) { var c = el.cloneNode(true); c.setAttribute("aria-hidden", "true"); c.setAttribute("inert", ""); c.classList.add("is-clone");
       Array.prototype.forEach.call(c.querySelectorAll("img"), function (i) { i.alt = ""; i.loading = "eager"; }); return c; }
     real.slice(-C).forEach(function (el) { track.insertBefore(clone(el), real[0]); });
     real.slice(0, C).forEach(function (el) { track.appendChild(clone(el)); });
+    root.style.setProperty("--dur", DELAY + "ms");
     var per = 3, pages = 1, idx = 0, timer = null, hold = 0, inView = true, busy = false;
 
     function measure() {
@@ -197,7 +198,7 @@
       per = Math.max(1, Math.floor(v)); var p = Math.ceil(n / per);
       if (p !== pages || !dotsBox.children.length) {
         pages = p; dotsBox.innerHTML = "";
-        for (var i = 0; i < pages; i++) { var b = document.createElement("button"); b.type = "button";
+        for (var i = 0; i < pages; i++) { var b = document.createElement("button"); b.type = "button"; b.appendChild(document.createElement("span"));
           b.setAttribute("aria-label", "Show industries " + (i * per + 1) + " to " + Math.min(n, i * per + per));
           b.addEventListener("click", (function (k) { return function () { go(start(k), true); }; })(i)); dotsBox.appendChild(b); }
       }
@@ -207,9 +208,11 @@
     function page(i) { return i >= n - per ? pages - 1 : Math.floor(i / per); }
     function place(anim) {
       track.classList.toggle("no-anim", !anim);
-      var el = track.children[idx + C]; track.style.transform = "translate3d(" + (-el.offsetLeft) + "px,0,0)";
+      var el = track.children[idx + C]; track.style.transform = "translate3d(" + (-(el.offsetLeft - track.children[0].offsetLeft)) + "px,0,0)";
       var pg = page(((idx % n) + n) % n);
-      Array.prototype.forEach.call(dotsBox.children, function (d, k) { d.setAttribute("aria-current", k === pg ? "true" : "false"); });
+      var ri = ((idx % n) + n) % n; if (cur) cur.textContent = (ri + 1 < 10 ? "0" : "") + (ri + 1);
+      Array.prototype.forEach.call(dotsBox.children, function (d, k) { d.setAttribute("aria-current", k === pg ? "true" : "false"); d.classList.toggle("is-done", k < pg); d.classList.remove("is-run"); });
+      arm(pg);
     }
     function go(i, user) {
       if (busy && !user) return;
@@ -231,9 +234,18 @@
       if (e.key === "ArrowRight") { e.preventDefault(); next(true); } else if (e.key === "ArrowLeft") { e.preventDefault(); prev(true); }
     });
 
-    function tick() { if (!hold && inView && !document.hidden) next(false); }
-    function restart() { clearInterval(timer); if (!reduce) timer = setInterval(tick, DELAY); }
-    function pause() { hold++; } function resume() { hold = Math.max(0, hold - 1); }
+    function arm(pg) {
+      var seg = dotsBox.children[pg]; if (!seg) return;
+      void seg.offsetWidth; seg.classList.add("is-run");
+    }
+    dotsBox.addEventListener("animationend", function (e) {
+      if (!reduce && !hold && inView && !document.hidden) next(false);
+      else { var s = e.target.closest("button"); if (s) { s.classList.remove("is-run"); timer = s; } }
+    });
+    function sync() { root.classList.toggle("is-paused", !!hold || !inView || document.hidden); }
+    function restart() { if (timer && timer.parentNode) { var t = timer; timer = null; t.classList.remove("is-run"); arm(Array.prototype.indexOf.call(dotsBox.children, t)); } }
+    function pause() { hold++; sync(); } function resume() { hold = Math.max(0, hold - 1); sync(); if (!hold) restart(); }
+    document.addEventListener("visibilitychange", function () { sync(); if (!document.hidden) restart(); });
     root.addEventListener("mouseenter", pause); root.addEventListener("mouseleave", resume);
     root.addEventListener("focusin", function () { if (!root._f) { root._f = 1; pause(); } });
     root.addEventListener("focusout", function (e) { if (!root.contains(e.relatedTarget) && root._f) { root._f = 0; resume(); } });
@@ -246,7 +258,7 @@
     vp.addEventListener("pointerdown", function (e) {
       if (e.button) return; drag = true; decided = false; horiz = false; sx = e.clientX; sy = e.clientY; dx = 0;
       if (busy) settle();
-      base = -track.children[idx + C].offsetLeft;
+      base = -(track.children[idx + C].offsetLeft - track.children[0].offsetLeft);
     });
     vp.addEventListener("pointermove", function (e) {
       if (!drag) return; dx = e.clientX - sx; var dy = e.clientY - sy;
@@ -262,7 +274,7 @@
     }
     vp.addEventListener("pointerup", end); vp.addEventListener("pointercancel", end);
 
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }).observe(root);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; sync(); if (inView) restart(); }).observe(root);
     var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(measure, 120); });
     measure(); restart();
     root._biz = { next: next, prev: prev, get idx() { return idx; }, get hold() { return hold; } };

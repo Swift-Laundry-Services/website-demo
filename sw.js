@@ -1,7 +1,7 @@
 /* Swift Laundry Services: tiny service worker so the site can be installed
    to the home screen and still opens offline. Network first, cache fallback,
    so a new deploy is always picked up straight away. */
-var CACHE = "swift-demo-4";
+var CACHE = "swift-demo-5";
 self.addEventListener("install", function (e) { self.skipWaiting(); });
 self.addEventListener("activate", function (e) {
   e.waitUntil(caches.keys().then(function (keys) {
