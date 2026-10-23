@@ -35,3 +35,6 @@ GitHub Pages via `.github/workflows/pages.yml` on push to `main`. `_build/` is e
 
 Designed and developed by **Innocent Christo** for Swift Laundry Services.  
 © 2026 Innocent Christo. See `humans.txt`.
+
+## Pickup flow & time slots
+The Schedule a Pickup page has four steps: details, choose your load (with quantities), pickup date and 1-hour time slot, then a review page with the estimated total. Load prices come from `pricing.washFold` and the time slots from `pickup` in `assets/js/site-config.js`.

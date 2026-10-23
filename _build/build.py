@@ -379,6 +379,9 @@ def choices(name, typ, items, legend, checked=0):
     c = "".join(f'<label class="choice"><input type="{typ}" name="{name}" value="{v}" data-label="{l}"{" checked" if i == checked else ""}><span>{l}</span></label>' for i, (v, l) in enumerate(items))
     return f'<fieldset class="fieldset span-2" data-summary-group data-summary-label="{legend}"><legend>{legend}</legend><div class="choice-grid">{c}</div></fieldset>'
 
+LOAD_ROWS = "".join(f'''<div class="load-row" data-load="{k}" data-idx="{i}"><div class="load-info"><strong>{n}</strong><span>{c}</span></div><div class="load-price" data-price="washFold.{i}.price">{pr}</div><div class="qty" role="group" aria-label="Quantity of {n}"><button type="button" class="qty-btn" data-dec aria-label="Fewer {n}">−</button><input class="qty-in" type="number" min="0" max="20" value="0" inputmode="numeric" data-qty="{k}" aria-label="{n} quantity"><button type="button" class="qty-btn" data-inc aria-label="More {n}">+</button></div></div>'''
+  for i,(k,n,c,pr) in enumerate([("single","Single Load","1/2 Full Laundry Bag · 1-10 lbs","$41.99"),("couple","Couple Load","1 Full Laundry Bag · 10-25 lbs","$56.99"),("family","Family Load","2 Full Laundry Bags · 25-40 lbs","$79.99"),("duvet","Duvet or blanket","One item","$41.99")]))
+
 page("pickup.html", "Schedule a Pickup | Swift Laundry Services",
  "Request a laundry pickup in Garfield Heights and selected Cleveland neighborhoods. We’ll confirm availability, timing and fees with you.",
  band("Your next laundry day starts here.", "Schedule a Pickup", "Schedule a Pickup", "Request a pickup. We’ll confirm availability, timing and fees with you.") + f'''
@@ -388,43 +391,59 @@ page("pickup.html", "Schedule a Pickup | Swift Laundry Services",
       <h2 class="visually-hidden" id="pickup-title">Pickup request</h2>
       <ol class="stepper" role="list" data-stepper>
         <li class="is-current"><span class="sn">1</span><span class="sl">Your details</span></li>
-        <li><span class="sn">2</span><span class="sl">Pickup preferences</span></li>
-        <li><span class="sn">3</span><span class="sl">Review &amp; request</span></li>
+        <li><span class="sn">2</span><span class="sl">Choose your load</span></li>
+        <li><span class="sn">3</span><span class="sl">Pickup time</span></li>
+        <li><span class="sn">4</span><span class="sl">Review &amp; total</span></li>
       </ol>
       <form data-pickup data-subject="Pickup request — Swift Laundry Services" action="#" method="post" novalidate>
         <fieldset class="step-panel" data-step="1">
           <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("user-round")}</span><span><strong>Your details</strong><small>Let us know where to pick up your laundry.</small></span></legend>
           <div class="form-grid form-grid--2">
             {field("p-name", "Full name", auto="name", span=True)}
-            {field("p-phone", "Mobile number", "tel", auto="tel", extra='inputmode="tel" pattern="[0-9()+.\\- ]{7,}" data-msg-pattern="Please enter a valid phone number."')}
+            {field("p-phone", "Mobile number", "tel", auto="tel", extra='inputmode="tel" pattern="[0-9\\(\\)+. \\-]{7,}" data-msg-pattern="Please enter a valid phone number."')}
             {field("p-email", "Email", "email", req=False, auto="email", opt=True)}
             {field("p-address", "Pickup address", auto="street-address", span=True, extra='placeholder="Street address, apartment / unit"')}
             {field("p-city", "City", auto="address-level2", extra='placeholder="e.g. Garfield Heights"')}
             {field("p-zip", "ZIP code", auto="postal-code", extra='inputmode="numeric" maxlength="5" pattern="[0-9]{5}" data-msg-pattern="Please enter a valid five-digit US ZIP code."')}
           </div>
-          <div class="step-actions"><span></span><button class="btn btn--purple" type="button" data-next>Next: pickup preferences {I("arrow-right")}</button></div>
+          <div class="step-actions"><span></span><button class="btn btn--purple" type="button" data-next>Next: choose your load {I("arrow-right")}</button></div>
         </fieldset>
         <fieldset class="step-panel" data-step="2" hidden>
-          <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("calendar-days")}</span><span><strong>Pickup preferences</strong><small>Tell us what works best for you.</small></span></legend>
+          <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("shopping-bag")}</span><span><strong>Choose your load</strong><small>Pick a load size, then how many of each.</small></span></legend>
+          <div class="load-list" data-loads role="group" aria-label="Load sizes">{LOAD_ROWS}</div>
+          <p class="field-error load-error" data-load-error aria-live="polite"></p>
+          <div class="load-sum" data-load-sum aria-live="polite"><span>Estimated total</span><strong data-load-total>$0.00</strong></div>
+          <p class="small-muted">{EXTRA_NOTE}</p>
+          <div class="form-grid form-grid--2" style="margin-top:18px">
+            <div class="field span-2"><label for="p-detergent">Detergent preference <span class="optional">(optional)</span></label><select class="select" id="p-detergent" name="p-detergent"><option>Standard</option><option>Fragrance-free</option><option>I’ll describe it below</option></select><span class="field-error" aria-live="polite"></span></div>
+          </div>
+          <div hidden data-summary-label="Order"><input type="hidden" name="order-lines" data-order-lines></div>
+          <div class="step-actions"><button class="btn btn--outline" type="button" data-back>{I("arrow-left")} Back</button><button class="btn btn--purple" type="button" data-next>Next: pickup time {I("arrow-right")}</button></div>
+        </fieldset>
+        <fieldset class="step-panel" data-step="3" hidden>
+          <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("calendar-days")}</span><span><strong>Pickup time</strong><small>Choose the day and a 1-hour pickup slot.</small></span></legend>
           <div class="form-grid form-grid--2">
-            {field("p-date", "Preferred date", "date", extra="data-min-today", hint="A request, not a reserved slot.")}
-            <div class="field"><label for="p-window">Preferred time window <span class="optional">(optional)</span></label><select class="select" id="p-window" name="p-window"><option value="">No preference</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select><span class="field-hint">We confirm the actual window with you. {tbc("Pickup hours to be confirmed")}</span><span class="field-error" aria-live="polite"></span></div>
+            {field("p-date", "Pickup date", "date", span=True, extra="data-min-today", hint="A request, not a reserved slot. We confirm it with you.")}
+            <fieldset class="fieldset span-2" data-summary-group data-summary-label="Pickup time" data-slots><legend>Pickup slot <span class="optional">(1 hour)</span></legend>
+              <div class="slot-cols"><div class="slot-col"><h3 class="slot-h">{I("sunrise")}Morning</h3><div class="slot-grid" data-slots-morning></div></div><div class="slot-col"><h3 class="slot-h">{I("sun")}Afternoon</h3><div class="slot-grid" data-slots-afternoon></div></div></div>
+              <span class="field-error" data-slot-error aria-live="polite"></span>
+              <span class="field-hint">{tbc("Pickup hours to be confirmed")}</span>
+            </fieldset>
             {choices("frequency", "radio", [("one-time", "One-time"), ("weekly", "Weekly"), ("biweekly", "Biweekly")], "Frequency")}
-            {choices("items", "checkbox", [("everyday", "Everyday laundry"), ("bedding", "Bedding (quote)"), ("towels", "Towels (quote)")], "Items")}
-            <div class="field"><label for="p-tier">Order size <span class="optional">(optional)</span></label><select class="select" id="p-tier" name="p-tier" data-prefill="tier"><option value="">Not sure yet</option><option value="single">Single Load · 1-10 lbs</option><option value="couple">Couple Load · 10-25 lbs</option><option value="family">Family Load · 25-40 lbs</option><option value="duvet">Duvet or blanket</option></select><span class="field-error" aria-live="polite"></span></div>
-            <div class="field"><label for="p-detergent">Detergent preference <span class="optional">(optional)</span></label><select class="select" id="p-detergent" name="p-detergent"><option>Standard</option><option>Fragrance-free</option><option>I’ll describe it below</option></select><span class="field-error" aria-live="polite"></span></div>
             {field("p-notes", "Access instructions or laundry preferences", "textarea", req=False, opt=True, span=True, extra='placeholder="e.g. door code, where to leave items, special care instructions"')}
             <div class="field span-2 check-field" data-summary-label="Contactless pickup"><label class="check"><input type="checkbox" name="p-contactless" value="Yes" data-label="Yes"><span>Contactless pickup requested</span></label></div>
           </div>
-          <div class="step-actions"><button class="btn btn--outline" type="button" data-back>{I("arrow-left")} Back</button><button class="btn btn--purple" type="button" data-next>Next: review {I("arrow-right")}</button></div>
+          <div class="step-actions"><button class="btn btn--outline" type="button" data-back>{I("arrow-left")} Back</button><button class="btn btn--purple" type="button" data-next>Next: review &amp; total {I("arrow-right")}</button></div>
         </fieldset>
-        <fieldset class="step-panel" data-step="3" hidden>
-          <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("clipboard-check")}</span><span><strong>Review &amp; request</strong><small>Check your details, then send your request.</small></span></legend>
+        <fieldset class="step-panel" data-step="4" hidden>
+          <legend class="step-head"><span class="icon-tile icon-tile--soft">{I("clipboard-check")}</span><span><strong>Review &amp; total</strong><small>Check your order and price, then confirm your request.</small></span></legend>
           <dl class="review-list" data-review></dl>
+          <div class="total-card" aria-live="polite"><div><span>Estimated total</span><small>Final price is confirmed after we check your order at pickup. Extra weight is <span data-price="extraPerLb">$1.90</span>/lb.</small></div><strong data-review-total>$0.00</strong></div>
+          <div hidden data-summary-label="Estimated total"><input type="hidden" name="order-total" data-order-total></div>
           <div class="field check-field" data-ack><label class="check"><input type="checkbox" name="p-ack" id="p-ack" required aria-describedby="p-ack-error"><span>I’ve reviewed the <a href="laundry-care.html" target="_blank" rel="noopener">laundry care policy</a> and <a href="service-terms.html" target="_blank" rel="noopener">service terms</a>.</span></label><span class="field-error" id="p-ack-error" aria-live="polite"></span></div>
           <p class="small-muted">Your details are only used to arrange this pickup. See our <a href="privacy.html" target="_blank" rel="noopener">privacy notice</a>.</p>
-          <div class="step-actions"><button class="btn btn--outline" type="button" data-back>{I("arrow-left")} Back</button><button class="btn btn--purple" type="submit" data-submit>Request Pickup</button></div>
-          <p class="small-muted center">No payment is taken with this request. We’ll contact you to confirm your pickup.</p>
+          <div class="step-actions"><button class="btn btn--outline" type="button" data-back>{I("arrow-left")} Back</button><button class="btn btn--purple" type="submit" data-submit>Confirm &amp; Request Pickup</button></div>
+          <p class="small-muted center">No payment is taken online. You pay once your laundry has been checked and confirmed at pickup.</p>
         </fieldset>
         <div class="form-fail" data-fail hidden role="alert"><strong>We couldn’t send your request.</strong> Your pickup has not been booked. Please try again or call/text us on <a href="{TEL}" data-href="tel">{PHONE}</a>.</div>
       </form>
@@ -436,7 +455,8 @@ page("pickup.html", "Schedule a Pickup | Swift Laundry Services",
         <ul class="next-list" role="list">
           <li>{I("clipboard-list")}<div><strong>We review your request</strong><span>We check the details and reach out to you.</span></div></li>
           <li>{I("calendar-check")}<div><strong>We confirm timing and fees</strong><span>We let you know if your requested date and time are available and share the fees with you.</span></div></li>
-          <li>{I("scale")}<div><strong>We weigh and confirm before washing</strong><span>Your items are weighed and we confirm the total with you before we wash.</span></div></li>
+          <li>{I("scale")}<div><strong>We check your bag at pickup</strong><span>We look through your laundry to confirm the load size and your final price before we wash.</span></div></li>
+          <li>{I("phone-call")}<div><strong>We call when it’s ready</strong><span>Once your laundry is done, we call you to arrange the drop-off time.</span></div></li>
         </ul>
       </div>
       <div data-reveal class="aside-card">

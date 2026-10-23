@@ -64,7 +64,7 @@
   var collect = function (form) {
     var rows = [], seen = {};
     $$("input, select, textarea", form).forEach(function (el) {
-      if (el.name === "p-ack") return;
+      if (el.name === "p-ack" || el.hasAttribute("data-qty")) return;
       var grp = el.closest("[data-summary-group]");
       var key = grp ? grp.getAttribute("data-summary-label") : labelOf(el);
       var val;
@@ -97,36 +97,105 @@
     done(); if (failBox) { failBox.hidden = false; scrollTo(failBox); }
   };
 
-  /* ---------- Schedule a Pickup: 3 steps ---------- */
+  /* ---------- Schedule a Pickup: 4 steps (details, load, time, review & total) ---------- */
   var pf = $("form[data-pickup]");
   if (pf) {
-    var panels = $$("[data-step]", pf), dots = $$("[data-stepper] li"), at = 0;
+    var panels = $$("[data-step]", pf), dots = $$("[data-stepper] li"), at = 0, LAST = panels.length - 1;
+    var PR = (CFG.pricing && CFG.pricing.washFold) || [];
+    var money = function (n) { return "$" + n.toFixed(2); };
+
+    /* Loads: quantity per load size, running total */
+    var rows = $$("[data-load]", pf);
+    var lines = function () {
+      var out = [], total = 0;
+      rows.forEach(function (r) {
+        var q = parseInt($("[data-qty]", r).value, 10) || 0, item = PR[+r.getAttribute("data-idx")] || {};
+        if (q > 0 && typeof item.price === "number") { out.push({ name: item.name, cap: [item.size, item.weight].filter(Boolean).join(" · "), q: q, price: item.price }); total += q * item.price; }
+      });
+      return { out: out, total: total };
+    };
+    var upd = function () {
+      var L = lines(), t = $("[data-load-total]", pf); if (t) t.textContent = money(L.total);
+      rows.forEach(function (r) { r.classList.toggle("is-on", (parseInt($("[data-qty]", r).value, 10) || 0) > 0); });
+      $("[data-order-lines]", pf).value = L.out.map(function (l) { return l.q + " × " + l.name + (l.cap ? " (" + l.cap + ")" : "") + " at " + money(l.price) + " = " + money(l.q * l.price); }).join("; ");
+      $("[data-order-total]", pf).value = L.out.length ? money(L.total) + " (estimate; final price confirmed at pickup)" : "";
+      var e = $("[data-load-error]", pf); if (e && L.out.length) e.textContent = "";
+    };
+    rows.forEach(function (r) {
+      var inp = $("[data-qty]", r);
+      var set = function (v) { v = Math.max(0, Math.min(20, v || 0)); inp.value = v; upd(); };
+      $("[data-dec]", r).addEventListener("click", function () { set((parseInt(inp.value, 10) || 0) - 1); });
+      $("[data-inc]", r).addEventListener("click", function () { set((parseInt(inp.value, 10) || 0) + 1); });
+      inp.addEventListener("input", function () { upd(); });
+      inp.addEventListener("change", function () { set(parseInt(inp.value, 10)); });
+    });
+    /* ?tier=family from the pricing cards pre-selects one of that load */
+    try {
+      var tq = new URLSearchParams(location.search).get("tier"), tr = tq && $('[data-load="' + tq + '"]', pf);
+      if (tr) $("[data-qty]", tr).value = 1;
+    } catch (x) {}
+
+    /* Pickup time slots: 1-hour windows from site-config.js (pickup.morning / pickup.afternoon) */
+    var PK = CFG.pickup || {}, dur = PK.slotMinutes || 60;
+    var parse = function (t) { var m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(t); if (!m) return null; var h = +m[1] % 12 + (/pm/i.test(m[3]) ? 12 : 0); return h * 60 + +m[2]; };
+    var fmt = function (mins) { var h = Math.floor(mins / 60) % 24, m = mins % 60, ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return h + ":" + (m < 10 ? "0" : "") + m + " " + ap; };
+    var fill = function (sel, list, part) {
+      var box = $(sel, pf); if (!box) return;
+      (list || []).forEach(function (t, i) {
+        var st = parse(t); if (st == null) return;
+        var label = fmt(st) + " – " + fmt(st + dur);
+        var l = doc.createElement("label"); l.className = "slot";
+        l.innerHTML = '<input type="radio" name="p-slot" value="' + label + '" data-label="' + label + '"><span>' + label + "</span>";
+        box.appendChild(l);
+      });
+    };
+    fill("[data-slots-morning]", PK.morning || ["9:00 AM", "10:00 AM", "11:00 AM"]);
+    fill("[data-slots-afternoon]", PK.afternoon || ["1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"]);
+    $$('input[name="p-slot"]', pf).forEach(function (r) { r.addEventListener("change", function () { var e = $("[data-slot-error]", pf); if (e) e.textContent = ""; }); });
+
+    var validateStep = function (i) {
+      var ok = validateIn(panels[i]);
+      if (i === 1) {
+        if (!lines().out.length) { var e = $("[data-load-error]", pf); e.textContent = "Please choose at least one load."; if (ok) { var f = $("[data-inc]", rows[0]); f.focus(); } ok = false; }
+      }
+      if (i === 2) {
+        if (!$('input[name="p-slot"]:checked', pf)) { $("[data-slot-error]", pf).textContent = "Please choose a pickup time slot."; if (ok) $('input[name="p-slot"]', pf).focus(); ok = false; }
+      }
+      return ok;
+    };
     var show = function (i) {
       at = i;
       panels.forEach(function (p, k) { p.hidden = k !== i; });
       dots.forEach(function (d, k) { d.classList.toggle("is-current", k === i); d.classList.toggle("is-done", k < i); if (k === i) d.setAttribute("aria-current", "step"); else d.removeAttribute("aria-current"); });
-      if (i === 2) {
+      if (i === LAST) {
+        upd();
         var dl = $("[data-review]", pf);
         dl.innerHTML = "";
-        collect(pf).forEach(function (r) { var dt = doc.createElement("dt"), dd = doc.createElement("dd"); dt.textContent = r[0]; dd.textContent = r[1]; dl.appendChild(dt); dl.appendChild(dd); });
+        collect(pf).forEach(function (r) {
+          if (r[0] === "Order") { r[1].split("; ").forEach(function (ln, k) { var dt = doc.createElement("dt"), dd = doc.createElement("dd"); dt.textContent = k ? "" : "Your order"; dd.textContent = ln; dl.appendChild(dt); dl.appendChild(dd); }); return; }
+          if (r[0] === "Estimated total") return;
+          var dt = doc.createElement("dt"), dd = doc.createElement("dd"); dt.textContent = r[0]; dd.textContent = r[1]; dl.appendChild(dt); dl.appendChild(dd);
+        });
+        $("[data-review-total]", pf).textContent = money(lines().total);
       }
       scrollTo($("[data-stepper]"));
       var h = $(".step-head", panels[i]); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
     };
-    $$("[data-next]", pf).forEach(function (b) { b.addEventListener("click", function () { if (validateIn(panels[at])) show(at + 1); }); });
+    $$("[data-next]", pf).forEach(function (b) { b.addEventListener("click", function () { if (validateStep(at)) show(at + 1); }); });
     $$("[data-back]", pf).forEach(function (b) { b.addEventListener("click", function () { show(at - 1); }); });
-    pf.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT" && at < 2) { e.preventDefault(); var n = $("[data-next]", panels[at]); if (n) n.click(); } });
+    pf.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT" && at < LAST) { e.preventDefault(); var n = $("[data-next]", panels[at]); if (n) n.click(); } });
     pf.addEventListener("submit", function (e) {
       e.preventDefault();
-      if (at !== 2) return;
-      if (!validateIn(panels[2])) return;
-      var rows = collect(pf);
-      send(pf, rows, function (how) {
+      if (at !== LAST) return;
+      if (!validateIn(panels[LAST])) return;
+      var rws = collect(pf);
+      send(pf, rws, function (how) {
         /* Summary is kept in this tab only (sessionStorage), never in the URL. */
-        try { sessionStorage.setItem("swiftRequest", JSON.stringify({ how: how, rows: rows.filter(function (r) { return !/address|mobile|email|instructions/i.test(r[0]); }) })); } catch (x) {}
+        try { sessionStorage.setItem("swiftRequest", JSON.stringify({ how: how, rows: rws.filter(function (r) { return !/address|mobile|email|instructions/i.test(r[0]); }) })); } catch (x) {}
         window.location.href = "request-received.html";
       });
     });
+    upd();
   }
 
   /* ---------- Request received ---------- */
